@@ -1,0 +1,167 @@
+﻿@model IEnumerable<QuickBill_POS.Business_Data.FoodItemModel>
+
+@{
+    ViewData["Title"] = "Food Items List";
+}
+
+<div class="d-flex justify-content-between align-items-center mt-3 mx-3">
+    @* <h4 class="m-0">QuickBill_POS</h4> *@
+    <h2>Food Items List</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+            @* <li class="breadcrumb-item"><a href="@Url.Action("FoodItemList")">Food Items</a></li> *@
+            <li class="breadcrumb-item active" aria-current="page">Food Items List</li>
+        </ol>
+    </nav>
+</div>
+ <div class="card p-2 mt-3 shadow">
+    @* <h2 class="text-center">List of Bill Items</h2> *@
+
+    <form method="get" id="searchForm" class="d-flex align-content-center justify-content-around m-3">
+        <div class="form-group col-md-3">
+            <input type="text" id="searchTerm" name="searchTerm" value="@ViewBag.CurrentSearch" placeholder="Search by name..."
+                   class="form-control form-control-sm justify-content-end shadow" />
+        </div>
+        <div class="form-group col-md-3">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" id="basic-addon1">Records:</span>
+                <select id="pageSize" name="pageSize" class="form-control shadow" onchange="document.getElementById('searchForm').submit()" aria-label="Page size select" aria-describedby="basic-addon1">
+                    @Html.Raw(ViewBag.PageSizeOptions)
+                </select>
+            </div>
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="page" value="@ViewBag.CurrentPage" />
+        </div>
+    </form>
+
+    @if (Model != null && Model.Any())
+    {
+        @* <div class="table-responsive"> *@
+            int SerialNo = ((ViewBag.CurrentPage - 1) * ViewBag.PageSize) + 1;
+        <div class="table table-responsive-md">
+        <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>
+                            Sr No
+                        </th>
+                        <th>
+                            @* Name *@
+                            <a href="?sortOrder=@(ViewBag.CurrentSort == "name_asc" ? "name_desc" : "name_asc")" class="text-decoration-none">
+                                Name
+                                @(ViewBag.CurrentSort == "name_asc" ? "▲" : ViewBag.CurrentSort == "name_desc" ? "▼" : "")
+                            </a>
+                        </th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="foodTable">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@SerialNo</td>
+                            <td>@item.Name</td>
+                            <td class="text-center">
+                                <a href="@Url.Action("AddEditFoodItem", new { id = item.Id })" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                @* <button class="btn btn-danger btn-sm" onclick="confirmDelete(@item.Id)"> *@
+                                @*     <i class="fas fa-trash"></i> Delete *@
+                                @* </button> *@
+                            </td>
+                        </tr>
+                    SerialNo++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">No food items found.</div>
+    }
+
+    <nav aria-label="Page navigation" class="d-flex align-content-center justify-content-around">
+        <div class="col-md">
+            <a href="@Url.Action("AddEditFoodItem")" class="btn btn-primary">
+             <i class="fas fa-plus"></i> Add Food Item 
+
+            </a>
+        </div>
+        <div class="col-md">
+            <ul class="pagination justify-content-end">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item shadow">
+                        <a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)&searchTerm=@ViewBag.CurrentSearch&sortOrder=@ViewBag.CurrentSort" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled shadow">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="?page=@i&searchTerm=@ViewBag.CurrentSearch&sortOrder=@ViewBag.CurrentSort">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)&searchTerm=@ViewBag.CurrentSearch&sortOrder=@ViewBag.CurrentSort" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </nav>
+</div>
+
+@section Scripts {
+    <script>
+        // Live Search
+         document.addEventListener("DOMContentLoaded", function () {
+            let searchInput = document.getElementById("searchTerm");
+            let searchForm = document.getElementById("searchForm");
+            let debounceTimeout;
+
+            searchInput.addEventListener("input", function () {
+                clearTimeout(debounceTimeout); // Clear previous timeout
+
+                debounceTimeout = setTimeout(function () {
+                    searchForm.submit(); // Submit form after delay
+                }, 500); // Delay of 500ms
+            });
+        });
+
+        // Delete Confirmation
+        function confirmDelete(id) {
+            if (confirm("Are you sure you want to delete this food item?")) {
+                window.location.href = "/FoodItem/Delete/" + id;
+            }
+        }
+    </script>
+
+
+
+
+    <!-- FontAwesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+}

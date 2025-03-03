@@ -1,0 +1,280 @@
+﻿@model IEnumerable<QuickBill_POS.Business_Data.BillDetailListModel>
+
+
+<div class="d-flex justify-content-between align-items-center mt-3 mx-3">
+    @* <h4 class="m-0">QuickBill_POS</h4> *@
+    <h2>Bill Items List</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+            @* <li class="breadcrumb-item"><a href="@Url.Action("FoodItemList")">Food Items</a></li> *@
+            <li class="breadcrumb-item active" aria-current="page">Bill Items List</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Print Button visible on screen -->
+<div class="d-print-none mt-3 mb-3 d-flex align-items-center justify-content-end">
+    <a class="btn btn-primary px-5 py-2" id="printButton">
+        <i class="bi bi-printer"></i> Print
+    </a>
+    @* <button type="button" class="btn btn-primary px-5 py-2" id="printButton">Print</button> *@
+</div>
+<div class="card p-2 shadow">
+    @* <h2 class="text-center">List of Bill Items</h2> *@
+
+    <form method="get" id="searchForm" class="d-flex align-content-center justify-content-around m-3">
+        <div class="form-group col-md-3">
+            <input type="text" id="searchTerm" name="searchTerm" value="@ViewBag.CurrentSearch" placeholder="Search by name..."
+                   class="form-control form-control-sm justify-content-end shadow" />
+        </div>
+        <div class="form-group col-md-3">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" id="basic-addon1">Records:</span>
+                <select id="pageSize" name="pageSize" class="form-control shadow" onchange="document.getElementById('searchForm').submit()" aria-label="Page size select" aria-describedby="basic-addon1">
+                    @Html.Raw(ViewBag.PageSizeOptions)
+                </select>
+            </div>
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="page" value="@ViewBag.CurrentPage" />
+        </div>
+    </form>
+
+
+@if (Model != null && Model.Any())
+    {
+        int SerialNo = ((ViewBag.CurrentPage - 1) * ViewBag.PageSize) + 1;
+        <div class="table table-responsive-md">
+        <table class="table table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>
+                        Sr No
+                    </th>
+                    <th>
+                        @* Bill ID *@
+                        <a href="?sortOrder=@(ViewBag.CurrentSort == "billId_asc" ? "billId_desc" : "billId_asc")" class="text-decoration-none">
+                            Bill ID
+                            @(ViewBag.CurrentSort == "billId_asc" ? "▲" : ViewBag.CurrentSort == "billId_desc" ? "▼" : "")
+                        </a>
+                    </th>
+                    <th>
+                        @* Food Item Name *@
+                        <a href="?sortOrder=@(ViewBag.CurrentSort == "foodItemName_asc" ? "foodItemName_desc" : "foodItemName_asc")" class="text-decoration-none">
+                            Food Item Name
+                            @(ViewBag.CurrentSort == "foodItemName_asc" ? "▲" : ViewBag.CurrentSort == "foodItemName_desc" ? "▼" : "")
+                        </a>
+                    </th>
+                    <th>
+                        @* Price *@
+                        <a href="?sortOrder=@(ViewBag.CurrentSort == "price_asc" ? "price_desc" : "price_asc")" class="text-decoration-none">
+                            Price
+                            @(ViewBag.CurrentSort == "price_asc" ? "▲" : ViewBag.CurrentSort == "price_desc" ? "▼" : "")
+                        </a>
+                    </th>
+                    <th>
+                        @* Quantity *@
+                        <a href="?sortOrder=@(ViewBag.CurrentSort == "quantity_asc" ? "quantity_desc" : "quantity_asc")" class="text-decoration-none">
+                            Quantity
+                            @(ViewBag.CurrentSort == "quantity_asc" ? "▲" : ViewBag.CurrentSort == "quantity_desc" ? "▼" : "")
+                        </a>
+                    </th>
+                    <th>
+                        @* Weight Type *@
+                        <a href="?sortOrder=@(ViewBag.CurrentSort == "weightType_asc" ? "weightType_desc" : "weightType_asc")" class="text-decoration-none">
+                            Weight Type
+                            @(ViewBag.CurrentSort == "weightType_asc" ? "▲" : ViewBag.CurrentSort == "weightType_desc" ? "▼" : "")
+                        </a>
+                    </th>
+                    <th>
+                        @* Total *@
+                        <a href="?sortOrder=@(ViewBag.CurrentSort == "total_asc" ? "total_desc" : "total_asc")" class="text-decoration-none">
+                            Total
+                            @(ViewBag.CurrentSort == "total_asc" ? "▲" : ViewBag.CurrentSort == "total_desc" ? "▼" : "")
+                        </a>
+                    </th>
+                    @* <th>Actions</th> *@
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@SerialNo</td>
+                        <td>@item.BillId</td>
+                        <td>@item.FoodItemName</td> <!-- Show Food Item Name -->
+                        <td>@item.Price</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.WeightType</td>
+                        <td>@item.Total</td>
+                        @* <td> *@
+                        @*     <a href="@Url.Action("AddEditBillItem", "BillItem", new { id = item.Id })" class="btn btn-warning btn-sm">Edit</a> *@
+                        @*     <a href="@Url.Action("Delete", "BillItem", new { id = item.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete</a> *@
+                        @* </td> *@
+                    </tr>
+                    SerialNo++;
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6" class="text-end"><strong>Grand Total:</strong></td>
+                    <td><strong>@Model.Sum(item => item.Total)</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">No food items found.</div>
+    }
+
+    <nav aria-label="Page navigation" class="d-flex align-content-center justify-content-around">
+        <div class="col-md">
+            <a href="@Url.Action("AddEditBillItem", "BillItem")" class="btn btn-success py-2">Generate New Bill</a>
+        </div>
+        <div class="col-md">
+            <ul class="pagination justify-content-end">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item shadow">
+                        <a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)&searchTerm=@ViewBag.CurrentSearch&sortOrder=@ViewBag.CurrentSort" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled shadow">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="?page=@i&searchTerm=@ViewBag.CurrentSearch&sortOrder=@ViewBag.CurrentSort">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)&searchTerm=@ViewBag.CurrentSearch&sortOrder=@ViewBag.CurrentSort" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </nav>
+ </div>
+
+<!-- Print Button visible on screen -->
+
+
+
+<!-- This div is hidden from the main list view -->
+<div id="printSection" style="display:none;">
+    <div class="print-header">
+        <div class="site-name">Your Site Name</div>
+        <div class="bill-date">Bill Date: @DateTime.Now.ToString("MM/dd/yyyy hh:mm tt")</div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Food Item Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Weight Type</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.FoodItemName</td>
+                    <td>@item.Price</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.WeightType</td>
+                    <td>@item.Total</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end"><strong>Grand Total:</strong></td>
+                <td><strong>@Model.Sum(item => item.Total)</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="print-footer">
+        Thank You!
+    </div>
+
+    <!-- Print-specific styles can be included here -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+           
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+            .print-header .site-name {
+                font-size: 28pt;
+                font-weight: bold;
+            }
+
+            .print-header .bill-date {
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 12pt;
+            }
+
+        .print-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 16pt;
+            font-weight: bold;
+        }
+    </style>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let searchInput = document.getElementById("searchTerm");
+            let searchForm = document.getElementById("searchForm");
+            let debounceTimeout;
+
+            searchInput.addEventListener("input", function () {
+                clearTimeout(debounceTimeout); // Clear previous timeout
+
+                debounceTimeout = setTimeout(function () {
+                    searchForm.submit(); // Submit form after delay
+                }, 500); // Delay of 500ms
+            });
+        });
+    </script>
+}
+
+
+<script src="~/js/Print.js"></script>
+
